@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wheel of Fortune</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .wheel-container { position: relative; width: 320px; margin: auto; }
+        .wheel { width: 100%; border-radius: 50%; border: 8px solid #333; transition: transform 4s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3); }
+        .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 40px solid red; }
+        #result { margin-top: 20px; font-size: 22px; font-weight: bold; color: #333; }
+        .button-container { margin-top: 20px; }
+        .vacation-container { margin-top: 20px; text-align: center; display: flex; justify-content: center; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; border: none; border-radius: 5px; background-color: #007BFF; color: white; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Wheel of Fortune</h1>
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="300" height="300"></canvas>
+    </div>
+    <div class="button-container">
+        <button onclick="spinWheel()">Spin</button>
+    </div>
+    <p id="result"></p>
+    <div class="vacation-container">
+        <button id="vacationButton" style="display:none;" onclick="pickVacation()">Pick a destination</button>
+    </div>
+    <p id="vacationResult"></p>
+    
+    <script>
+        const canvas = document.getElementById("wheel");
+        const ctx = canvas.getContext("2d");
+        const colors = ["#FF69B4", "#8A2BE2", "#FFD700"];
+        const segments = ["Jeg vælger", "2 dags Østrig stop + Italien", "Kroatien", "Storby + et sted tæt på kysten", "Frankrig", "Spanien/Portugal - fly + lejebil", "Jeg vælger", "Tyskland og Tjekkiet", "Jeg vælger"];
+        const vacationDestinations = [
+            "Italy", "Spain", "France", "Germany", "Greece", "Sweden", "Portugal", "Norway", 
+            "Copenhagen", "Berlin", "Barcelona", "Rome", "Paris", "Amsterdam", "Vienna", "Lisbon", "Prague", "Budapest", 
+            "Madrid", "Stockholm", "Athens", "Dublin", "Brussels", "Warsaw", "Helsinki", "Oslo", "Zurich"
+        ];
+        const segmentAngle = (2 * Math.PI) / segments.length;
+        let currentRotation = 0;
+        let spinTimeout;
+        let spinning = false;
+
+        function drawWheel() {
+            for (let i = 0; i < segments.length; i++) {
+                ctx.beginPath();
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 150, i * segmentAngle, (i + 1) * segmentAngle);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        function spinWheel() {
+            if (spinning) return;
+            spinning = true;
+            document.getElementById("vacationButton").style.display = "none";
+            document.getElementById("vacationResult").innerText = "";
+            let randomRotation = Math.floor(3600 + Math.random() * 720);
+            currentRotation += randomRotation;
+            canvas.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67)";
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            
+            clearTimeout(spinTimeout);
+            spinTimeout = setTimeout(() => {
+                let winningIndex = Math.floor(((currentRotation % 360) / 360) * segments.length);
+                winningIndex = (segments.length - winningIndex) % segments.length;
+                document.getElementById("result").innerText = "Vi tager til: " + segments[winningIndex];
+                
+                if (segments[winningIndex] === "Jeg vælger") {
+                    document.getElementById("vacationButton").style.display = "block";
+                }
+                spinning = false;
+            }, 4000);
+        }
+
+        function pickVacation() {
+            const randomDestination = vacationDestinations[Math.floor(Math.random() * vacationDestinations.length)];
+            document.getElementById("vacationResult").innerText = "Your vacation destination is: " + randomDestination;
+        }
+
+        drawWheel();
+    </script>
+</body>
+</html>
